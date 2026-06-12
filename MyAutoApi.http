@@ -1,6 +1,0 @@
-@MyAutoApi_HostAddress = http://localhost:5201
-
-GET {{MyAutoApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
