@@ -1,18 +1,22 @@
 using Scalar.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 
+// Initialize the core web application builder infrastructure
 var builder = WebApplication.CreateBuilder(args);
 
+// Register baseline controller routing frameworks and explorer components
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-// Register our permanent SQLite database service file
+// CONFIGURATION LAYER: Connect and register a permanent physical SQLite file engine instance
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=catalog.db"));
 
+// Build and materialize the configured web application pipeline instance
 var app = builder.Build();
 
+// DEVELOPMENT PIPELINE LAYER: Configure autonomous OpenAPI schema maps and custom visual themes
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().AllowAnonymous();
@@ -21,37 +25,50 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Security, routing configurations, and internal transit protocol configurations
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-// Your Automated Reference Routes
+// SECURITY AUDIT LAYER: Define the global private authentication token credential string
+const string SECRET_API_KEY = "SuperSecretDeveloperKey123";
+
+// BASELINE VERIFICATION LAYER: Simple routing endpoint used to ensure the core runtime compiler is online
 app.MapGet("/mytest", () => "Automation test!")
    .WithSummary("My Automated Test Route");
 
-// 1. READ ALL ROUTE - Pulls data directly from the physical SQL database disk
+// ENDPOINT 1: READ METADATA - Connects directly to SQL disk, queries the collection table, and displays data
 app.MapGet("/api/catalog", async (AppDbContext db) => 
     await db.Catalog.ToListAsync())
    .WithSummary("Get Complete Media Catalog")
    .WithDescription("Returns a list of all movies and books permanently saved in your SQLite database file.");
 
-// 2. CREATE NEW ROUTE - Writes and saves data directly to the physical SQL database disk
-app.MapPost("/api/catalog", async (MediaItem newItem, AppDbContext db) => {
+// ENDPOINT 2: SECURE WRITE PIPELINE - Runs a cryptographic header validation check before appending records to storage
+app.MapPost("/api/catalog", async (HttpContext context, MediaItem newItem, AppDbContext db) => {
+    // SECURITY FIREWALL CHECK: Block the data transmission pipe if the secret API token is missing or incorrect
+    if (!context.Request.Headers.TryGetValue("X-API-KEY", out var extractedKey) || extractedKey != SECRET_API_KEY)
+    {
+        return Results.Unauthorized();
+    }
+    
+    // Commit the validated dataset entry directly to your hard disk memory tables
     db.Catalog.Add(newItem);
     await db.SaveChangesAsync();
     return Results.Created($"/api/catalog/{newItem.Id}", newItem);
 })
 .WithSummary("Add New Media Item")
-.WithDescription("Accepts a new movie or book item object and permanently saves it into your hard drive's SQL database.");
+.WithDescription("Accepts a new movie or book item object and permanently saves it into your hard drive's SQL database. Requires a valid X-API-KEY header verification.");
 
-// 3. FILTER SEARCH ROUTE - Searches through physical database records using parameters
+// ENDPOINT 3: DYNAMIC SEARCH FILTER ENGINE - Scans property records in real-time matching text strings
 app.MapGet("/api/catalog/search", async (string? creator, AppDbContext db) => 
 {
+    // FALLBACK CLAUSE: If the query value box is left empty, return the entire database array collection
     if (string.IsNullOrEmpty(creator))
     {
         return Results.Ok(await db.Catalog.ToListAsync());
     }
     
+    // LINQ PARSING ACTION: Look up and return only items matching the specified creator text, ignoring text casing constraints
     var filteredList = await db.Catalog
         .Where(item => item.Creator.Contains(creator, StringComparison.OrdinalIgnoreCase))
         .ToListAsync();
@@ -61,44 +78,63 @@ app.MapGet("/api/catalog/search", async (string? creator, AppDbContext db) =>
 .WithSummary("Search Catalog by Creator")
 .WithDescription("Filters the physical SQL database collection and returns only items matching the specified director or author name parameter.");
 
-// 4. PURGE DELETION ROUTE - Permanently scrubs a record out of the SQL database by its ID
-app.MapDelete("/api/catalog/{id:int}", async (int id, AppDbContext db) => 
+// ENDPOINT 4: PURGE SYSTEM ROUTE - Runs an access check, targets record by unique primary key ID, and deletes it completely
+app.MapDelete("/api/catalog/{id:int}", async (HttpContext context, int id, AppDbContext db) => 
 {
+    // SECURITY FIREWALL CHECK: Prevent unauthorized data deletions by ensuring the secure key header is attached
+    if (!context.Request.Headers.TryGetValue("X-API-KEY", out var extractedKey) || extractedKey != SECRET_API_KEY)
+    {
+        return Results.Unauthorized();
+    }
+
+    // TRACKING LOOKUP: Locate the row sequence index in disk storage matching the provided route tracking integer
     var itemToRemove = await db.Catalog.FirstOrDefaultAsync(item => item.Id == id);
     if (itemToRemove == null)
     {
         return Results.NotFound($"Item with ID {id} was not found in your catalog.");
     }
     
+    // Erase the target record object and save changes to update the file permanently
     db.Catalog.Remove(itemToRemove);
     await db.SaveChangesAsync();
     return Results.Ok($"Successfully deleted '{itemToRemove.Title}' from the database catalog portfolio.");
 })
 .WithSummary("Delete Media Item by ID")
-.WithDescription("Scans the physical SQL database table and permanently removes the matching media object record.");
+.WithDescription("Scans the physical SQL database table and permanently removes the matching media object record. Requires a valid X-API-KEY header verification.");
 
-// 5. METADATA UPDATE ROUTE - Completely overwrites database columns dynamically by ID
-app.MapPut("/api/catalog/{id:int}", async (int id, MediaItem updatedItem, AppDbContext db) =>
+// ENDPOINT 5: FIELD UPDATE ENGINE - Targets a specific row by its identity key and completely overwrites old column metadata fields
+app.MapPut("/api/catalog/{id:int}", async (HttpContext context, int id, MediaItem updatedItem, AppDbContext db) =>
 {
+    // SECURITY FIREWALL CHECK: Validate structural ownership access via authentication tokens
+    if (!context.Request.Headers.TryGetValue("X-API-KEY", out var extractedKey) || extractedKey != SECRET_API_KEY)
+    {
+        return Results.Unauthorized();
+    }
+
+    // TRACKING LOOKUP: Find the target entry sitting on the hard drive
     var existingItem = await db.Catalog.FirstOrDefaultAsync(item => item.Id == id);
     if (existingItem == null)
     {
         return Results.NotFound($"Item with ID {id} was not found in your catalog database.");
     }
 
+    // OVERWRITE LOGIC SECTOR: Replace old structural parameters with the incoming update payload
     existingItem.Title = updatedItem.Title;
     existingItem.Creator = updatedItem.Creator;
     existingItem.ReleaseYear = updatedItem.ReleaseYear;
     existingItem.Rating = updatedItem.Rating;
     existingItem.Genre = updatedItem.Genre;
+    existingItem.Duration = updatedItem.Duration;   
+    existingItem.Language = updatedItem.Language;   
 
+    // Execute disk transactions to commit structural shifts permanently
     await db.SaveChangesAsync();
     return Results.Ok(existingItem);
 })
 .WithSummary("Update Media Item Fields by ID")
-.WithDescription("Scans the SQL database table, locates the targeted record, and completely updates its metadata fields dynamically.");
+.WithDescription("Scans the SQL database table, locates the targeted record, and completely updates its metadata fields dynamically. Requires a valid X-API-KEY header verification.");
 
-// LAUNCH ENVIRONMENT
+// APPLICATION COMPILATION TERMINUS
 app.Run();
 
 // PHYSICAL DATABASE CORE INTERACTION MANAGER
@@ -134,4 +170,12 @@ public class MediaItem
     /// <summary>The dynamic categorical tag classification parameter of the item.</summary>
     /// <example>Sci-Fi</example>
     public string Genre { get; set; } = string.Empty;
+
+    /// <summary>The running length duration of the media track in total minutes.</summary>
+    /// <example>148</example>
+    public int Duration { get; set; } 
+
+    /// <summary>The default spoken or written language format profile tracking tag.</summary>
+    /// <example>English</example>
+    public string Language { get; set; } = string.Empty; 
 }
