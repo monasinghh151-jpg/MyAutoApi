@@ -11,7 +11,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().AllowAnonymous();
-  app.MapScalarApiReference(options => {
+    app.MapScalarApiReference(options => {
         options.WithTheme(ScalarTheme.DeepSpace);
     });
 }
@@ -24,10 +24,12 @@ app.MapControllers();
 app.MapGet("/mytest", () => "Automation test!")
    .WithSummary("My Automated Test Route");
 
+// 1. READ ALL ROUTE
 app.MapGet("/api/catalog", () => MediaData.Catalog)
    .WithSummary("Get Complete Media Catalog")
    .WithDescription("Returns a list of all movies and books currently saved in your database system portfolio.");
-// This route allows you to add a brand-new movie or book directly to your database list
+
+// 2. CREATE NEW ROUTE
 app.MapPost("/api/catalog", (MediaItem newItem) => {
     newItem.Id = MediaData.Catalog.Count + 1;
     MediaData.Catalog.Add(newItem);
@@ -35,7 +37,8 @@ app.MapPost("/api/catalog", (MediaItem newItem) => {
 })
 .WithSummary("Add New Media Item")
 .WithDescription("Accepts a new movie or book item object and permanently saves it into your running database portfolio list.");
-// This route allows users to filter and search your media catalog by creator/director
+
+// 3. FILTER SEARCH ROUTE
 app.MapGet("/api/catalog/search", (string? creator) => 
 {
     if (string.IsNullOrEmpty(creator))
@@ -51,7 +54,8 @@ app.MapGet("/api/catalog/search", (string? creator) =>
 })
 .WithSummary("Search Catalog by Creator")
 .WithDescription("Filters the virtual database collection and returns only items matching the specified director or author name parameter.");
-// This route allows users to remove a movie or book from the database using its unique ID number
+
+// 4. PURGE DELETION ROUTE
 app.MapDelete("/api/catalog/{id:int}", (int id) => 
 {
     var itemToRemove = MediaData.Catalog.FirstOrDefault(item => item.Id == id);
@@ -65,38 +69,38 @@ app.MapDelete("/api/catalog/{id:int}", (int id) =>
 })
 .WithSummary("Delete Media Item by ID")
 .WithDescription("Scans the virtual collection array and permanently removes the matching media object record.");
-// This route allows users to update an existing movie or book's fields by its unique ID number
-app.MapPut("/api/catalog/{id:int}", (int id, MediaItem updatedItem) => 
+
+// 5. METADATA UPDATE ROUTE
+app.MapPut("/api/catalog/{id:int}", (int id, MediaItem updatedItem) =>
 {
     var existingItem = MediaData.Catalog.FirstOrDefault(item => item.Id == id);
     if (existingItem == null)
     {
         return Results.NotFound($"Item with ID {id} was not found in your catalog database.");
     }
-    
-    // Update the values in our memory list
+
     existingItem.Title = updatedItem.Title;
     existingItem.Creator = updatedItem.Creator;
     existingItem.ReleaseYear = updatedItem.ReleaseYear;
     existingItem.Rating = updatedItem.Rating;
-    
-    return Results.Ok(existingItem);
-})
-.WithSummary("Update Media Item Fields by ID")
-.WithDescription("Scans the collection array, locates the targeted record, and completely updates its metadata fields dynamically.");
+    existingItem.Genre = updatedItem.Genre;
 
+    return Results.Ok(existingItem);
+});
+
+// LAUNCH ENVIRONMENT
 app.Run();
 
-// Your Virtual Portfolio Database Storage List
+// VIRTUAL PORTFOLIO DATABASE STORAGE LIST
 public static class MediaData
 {
     public static List<MediaItem> Catalog = new List<MediaItem>
     {
-        new MediaItem { Id = 1, Title = "Inception", Creator = "Christopher Nolan", ReleaseYear = 2010, Rating = 5 }
+        new MediaItem { Id = 1, Title = "Inception", Creator = "Christopher Nolan", ReleaseYear = 2010, Rating = 5, Genre = "Sci-Fi" }
     };
 }
 
-// Your Core Data Structure Blueprint Model
+// CORE DATA STRUCTURE BLUEPRINT MODEL
 public class MediaItem
 {
     public int Id { get; set; }
@@ -104,4 +108,5 @@ public class MediaItem
     public string Creator { get; set; } = string.Empty;
     public int ReleaseYear { get; set; }
     public int Rating { get; set; }
+    public string Genre { get; set; } = string.Empty;
 }
