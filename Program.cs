@@ -65,6 +65,25 @@ app.MapDelete("/api/catalog/{id:int}", (int id) =>
 })
 .WithSummary("Delete Media Item by ID")
 .WithDescription("Scans the virtual collection array and permanently removes the matching media object record.");
+// This route allows users to update an existing movie or book's fields by its unique ID number
+app.MapPut("/api/catalog/{id:int}", (int id, MediaItem updatedItem) => 
+{
+    var existingItem = MediaData.Catalog.FirstOrDefault(item => item.Id == id);
+    if (existingItem == null)
+    {
+        return Results.NotFound($"Item with ID {id} was not found in your catalog database.");
+    }
+    
+    // Update the values in our memory list
+    existingItem.Title = updatedItem.Title;
+    existingItem.Creator = updatedItem.Creator;
+    existingItem.ReleaseYear = updatedItem.ReleaseYear;
+    existingItem.Rating = updatedItem.Rating;
+    
+    return Results.Ok(existingItem);
+})
+.WithSummary("Update Media Item Fields by ID")
+.WithDescription("Scans the collection array, locates the targeted record, and completely updates its metadata fields dynamically.");
 
 app.Run();
 
