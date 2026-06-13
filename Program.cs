@@ -1,10 +1,15 @@
 using Scalar.AspNetCore;
 
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=catalog.db"));
+
 
 var app = builder.Build();
 
@@ -163,4 +168,11 @@ public class MediaItem
     /// <summary>The dynamic categorical tag classification parameter of the item.</summary>
     /// <example>Sci-Fi</example>
     public string Genre { get; set; } = string.Empty;
+}
+
+// DATABASE CONNECTION MANAGER (EF Core DbContext)
+public class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
+{
+    public AppDbContext(Microsoft.EntityFrameworkCore.DbContextOptions<AppDbContext> options) : base(options) { }
+    public Microsoft.EntityFrameworkCore.DbSet<MediaItem> Catalog { get; set; } = null!;
 }
