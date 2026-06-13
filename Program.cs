@@ -51,6 +51,20 @@ app.MapGet("/api/catalog/search", (string? creator) =>
 })
 .WithSummary("Search Catalog by Creator")
 .WithDescription("Filters the virtual database collection and returns only items matching the specified director or author name parameter.");
+// This route allows users to remove a movie or book from the database using its unique ID number
+app.MapDelete("/api/catalog/{id:int}", (int id) => 
+{
+    var itemToRemove = MediaData.Catalog.FirstOrDefault(item => item.Id == id);
+    if (itemToRemove == null)
+    {
+        return Results.NotFound($"Item with ID {id} was not found in your catalog.");
+    }
+    
+    MediaData.Catalog.Remove(itemToRemove);
+    return Results.Ok($"Successfully deleted '{itemToRemove.Title}' from the database catalog portfolio.");
+})
+.WithSummary("Delete Media Item by ID")
+.WithDescription("Scans the virtual collection array and permanently removes the matching media object record.");
 
 app.Run();
 
