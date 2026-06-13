@@ -20,7 +20,9 @@ namespace MyAutoApi.Migrations
                     Creator = table.Column<string>(type: "TEXT", nullable: false),
                     ReleaseYear = table.Column<int>(type: "INTEGER", nullable: false),
                     Rating = table.Column<int>(type: "INTEGER", nullable: false),
-                    Genre = table.Column<string>(type: "TEXT", nullable: false)
+                    Genre = table.Column<string>(type: "TEXT", nullable: false),
+                    Duration = table.Column<int>(type: "INTEGER", nullable: false),
+                    Language = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

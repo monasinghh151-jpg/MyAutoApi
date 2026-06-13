@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MyAutoApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260613101543_InitialCreate")]
+    [Migration("20260613155000_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -28,7 +28,14 @@ namespace MyAutoApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Duration")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Genre")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Language")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
