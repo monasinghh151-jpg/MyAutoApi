@@ -1,5 +1,4 @@
 using Scalar.AspNetCore;
-
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,9 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+// Register our permanent SQLite database service file
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=catalog.db"));
-
 
 var app = builder.Build();
 
@@ -17,7 +17,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().AllowAnonymous();
     app.MapScalarApiReference(options => {
-        options.WithTheme(ScalarTheme.DeepSpace);
+        options.Theme = ScalarTheme.DeepSpace;
     });
 }
 
@@ -29,56 +29,58 @@ app.MapControllers();
 app.MapGet("/mytest", () => "Automation test!")
    .WithSummary("My Automated Test Route");
 
-// 1. READ ALL ROUTE
-app.MapGet("/api/catalog", () => MediaData.Catalog)
+// 1. READ ALL ROUTE - Pulls data directly from the physical SQL database disk
+app.MapGet("/api/catalog", async (AppDbContext db) => 
+    await db.Catalog.ToListAsync())
    .WithSummary("Get Complete Media Catalog")
-   .WithDescription("Returns a list of all movies and books currently saved in your database system portfolio.");
+   .WithDescription("Returns a list of all movies and books permanently saved in your SQLite database file.");
 
-// 2. CREATE NEW ROUTE
-app.MapPost("/api/catalog", (MediaItem newItem) => {
-    newItem.Id = MediaData.Catalog.Count + 1;
-    MediaData.Catalog.Add(newItem);
+// 2. CREATE NEW ROUTE - Writes and saves data directly to the physical SQL database disk
+app.MapPost("/api/catalog", async (MediaItem newItem, AppDbContext db) => {
+    db.Catalog.Add(newItem);
+    await db.SaveChangesAsync();
     return Results.Created($"/api/catalog/{newItem.Id}", newItem);
 })
 .WithSummary("Add New Media Item")
-.WithDescription("Accepts a new movie or book item object and permanently saves it into your running database portfolio list.");
+.WithDescription("Accepts a new movie or book item object and permanently saves it into your hard drive's SQL database.");
 
-// 3. FILTER SEARCH ROUTE
-app.MapGet("/api/catalog/search", (string? creator) => 
+// 3. FILTER SEARCH ROUTE - Searches through physical database records using parameters
+app.MapGet("/api/catalog/search", async (string? creator, AppDbContext db) => 
 {
     if (string.IsNullOrEmpty(creator))
     {
-        return Results.Ok(MediaData.Catalog);
+        return Results.Ok(await db.Catalog.ToListAsync());
     }
     
-    var filteredList = MediaData.Catalog
+    var filteredList = await db.Catalog
         .Where(item => item.Creator.Contains(creator, StringComparison.OrdinalIgnoreCase))
-        .ToList();
+        .ToListAsync();
         
     return Results.Ok(filteredList);
 })
 .WithSummary("Search Catalog by Creator")
-.WithDescription("Filters the virtual database collection and returns only items matching the specified director or author name parameter.");
+.WithDescription("Filters the physical SQL database collection and returns only items matching the specified director or author name parameter.");
 
-// 4. PURGE DELETION ROUTE
-app.MapDelete("/api/catalog/{id:int}", (int id) => 
+// 4. PURGE DELETION ROUTE - Permanently scrubs a record out of the SQL database by its ID
+app.MapDelete("/api/catalog/{id:int}", async (int id, AppDbContext db) => 
 {
-    var itemToRemove = MediaData.Catalog.FirstOrDefault(item => item.Id == id);
+    var itemToRemove = await db.Catalog.FirstOrDefaultAsync(item => item.Id == id);
     if (itemToRemove == null)
     {
         return Results.NotFound($"Item with ID {id} was not found in your catalog.");
     }
     
-    MediaData.Catalog.Remove(itemToRemove);
+    db.Catalog.Remove(itemToRemove);
+    await db.SaveChangesAsync();
     return Results.Ok($"Successfully deleted '{itemToRemove.Title}' from the database catalog portfolio.");
 })
 .WithSummary("Delete Media Item by ID")
-.WithDescription("Scans the virtual collection array and permanently removes the matching media object record.");
+.WithDescription("Scans the physical SQL database table and permanently removes the matching media object record.");
 
-// 5. METADATA UPDATE ROUTE
-app.MapPut("/api/catalog/{id:int}", (int id, MediaItem updatedItem) =>
+// 5. METADATA UPDATE ROUTE - Completely overwrites database columns dynamically by ID
+app.MapPut("/api/catalog/{id:int}", async (int id, MediaItem updatedItem, AppDbContext db) =>
 {
-    var existingItem = MediaData.Catalog.FirstOrDefault(item => item.Id == id);
+    var existingItem = await db.Catalog.FirstOrDefaultAsync(item => item.Id == id);
     if (existingItem == null)
     {
         return Results.NotFound($"Item with ID {id} was not found in your catalog database.");
@@ -90,56 +92,20 @@ app.MapPut("/api/catalog/{id:int}", (int id, MediaItem updatedItem) =>
     existingItem.Rating = updatedItem.Rating;
     existingItem.Genre = updatedItem.Genre;
 
+    await db.SaveChangesAsync();
     return Results.Ok(existingItem);
-});
-// 6. AUTOMATED REGULATORY COMPLIANCE AUDIT ENGINE
-app.MapGet("/api/compliance/report", () => 
-{
-    var currentDatabaseState = MediaData.Catalog;
-    
-    // Evaluate Data Protection Principles (GDPR Art 5)
-    bool isDataAnonymized = !currentDatabaseState.Any(item => item.Title.Contains("CONFIDENTIAL"));
-    
-    // Evaluate Access Control Audit Trails (SOC 2 CC6.1)
-    bool isAuditLogActive = true; 
-    
-    // Compile System Risk Metric Calculations
-    int totalTrackedRecords = currentDatabaseState.Count;
-    string securityPosteRating = totalTrackedRecords > 0 ? "PASSED (Compliant)" : "WARNING (Zero Records Seeding)";
-
-    var complianceReport = new
-    {
-        StandardAuditDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss 'UTC'"),
-        FrameworksEvaluated = new[] { "SOC 2 Type II", "GDPR (General Data Protection Regulation)" },
-        SystemSecurityPosture = securityPosteRating,
-        AuditedMetrics = new
-        {
-            ActiveCatalogRecordCount = totalTrackedRecords,
-            DataEncryptionStandard = "AES-256 (In-Transit Https Mandated)",
-            AccessControlSchema = "RBAC Portfolio Framework"
-        },
-        ComplianceChecks = new[]
-        {
-            new { ControlId = "SOC2-CC6.1", ControlName = "Logical Access Security Controls", Status = isAuditLogActive ? "COMPLIANT" : "NON-COMPLIANT" },
-            new { ControlId = "GDPR-Art5.1", ControlName = "Data Minimization & Integrity Controls", Status = isDataAnonymized ? "COMPLIANT" : "NON-COMPLIANT" }
-        }
-    };
-
-    return Results.Ok(complianceReport);
 })
-.WithSummary("Generate Live Compliance Audit Report")
-.WithDescription("Autonomously evaluates runtime environmental parameters, data models, and system logging metrics to compile instant SOC 2 and GDPR compliance sheets.");
+.WithSummary("Update Media Item Fields by ID")
+.WithDescription("Scans the SQL database table, locates the targeted record, and completely updates its metadata fields dynamically.");
 
 // LAUNCH ENVIRONMENT
 app.Run();
 
-// VIRTUAL PORTFOLIO DATABASE STORAGE LIST
-public static class MediaData
+// PHYSICAL DATABASE CORE INTERACTION MANAGER
+public class AppDbContext : DbContext
 {
-    public static List<MediaItem> Catalog = new List<MediaItem>
-    {
-        new MediaItem { Id = 1, Title = "Inception", Creator = "Christopher Nolan", ReleaseYear = 2010, Rating = 5, Genre = "Sci-Fi" }
-    };
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public DbSet<MediaItem> Catalog { get; set; } = null!;
 }
 
 // CORE DATA STRUCTURE BLUEPRINT MODEL WITH AUTOMATED DOCS METADATA
@@ -168,11 +134,4 @@ public class MediaItem
     /// <summary>The dynamic categorical tag classification parameter of the item.</summary>
     /// <example>Sci-Fi</example>
     public string Genre { get; set; } = string.Empty;
-}
-
-// DATABASE CONNECTION MANAGER (EF Core DbContext)
-public class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
-{
-    public AppDbContext(Microsoft.EntityFrameworkCore.DbContextOptions<AppDbContext> options) : base(options) { }
-    public Microsoft.EntityFrameworkCore.DbSet<MediaItem> Catalog { get; set; } = null!;
 }
