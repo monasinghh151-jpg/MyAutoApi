@@ -1,111 +1,101 @@
-# 🎬 Enterprise Media Catalog REST Engine
+# Media Catalog REST Service
 
-[![Enterprise DevOps Pipeline](https://github.com)](https://github.com)
-[![Database Engine](https://shields.io)](https://microsoft.com)
-[![Security Gateway](https://shields.io)]()
-[![Compliance Validation](https://shields.io)]()
-
-A high-performance, enterprise-grade backend REST API architecture built with **.NET 10** implementing secure data persistence pipelines, stateless security gateway firewalls, real-time compliance auditing modules, and automated DevOps deployment workflows.
+A backend service built on .NET 10 implementing RESTful architecture, relational database persistence, header-based API key authentication, and automated integration workflows via GitHub Actions.
 
 ---
 
-## 🗺️ System Engineering Architecture Matrix
+## System Architecture
 
-This blueprint maps out how streaming user traffic passes securely through your multi-layered backend infrastructure to write records straight onto your hard drive:
+The following schematic outlines the request-response lifecycle for incoming client network traffic:
 
 ```text
- [ Client App Request ]
-         │
-         ▼
- ┌────────────────────────────────────────────────────────┐
- │ 🛡️ SECURITY LAYER: API Key Firewall (X-API-KEY Check)   │
- └───────────────────────┬────────────────────────────────┘
-                         │
-            ┌────────────┴────────────┐
-            ▼ (Invalid Key)           ▼ (Valid Key)
-   [ 🚫 401 Unauthorized ]   [ ✅ Gateway Access Unlocked ]
-                                      │
-                                      ▼
-                         ┌────────────────────────────────┐
-                         │ 📡 REST LAYER: Minimal API      │
-                         │    Routing Lifecycles (CRUD)   │
-                         └────────────────┬───────────────┘
-                                          │
-                                          ▼
-                         ┌────────────────────────────────┐
-                         │ 💾 PERSISTENCE LAYER: EF Core  │
-                         │    Object-Relational Mapping   │
-                         └────────────────┬───────────────┘
-                                          │
-                                          ▼
-                         ┌────────────────────────────────┐
-                         │ 🗄️ STORAGE LAYER: SQLite File  │
-                         │    Hard Drive (`catalog.db`)   │
-                         └────────────────────────────────┘
+ [ Client HTTPS Request ]
+            │
+            ▼
+ ┌──────────────────────────────────────┐
+ │ Security Gateway: API Key Validation │
+ └──────────────────┬───────────────────┘
+                    │
+          ┌─────────┴─────────┐
+          ▼ (Invalid Key)     ▼ (Valid Key)
+   [ 401 Unauthorized ]    [ Access Granted ]
+                              │
+                              ▼
+ ┌──────────────────────────────────────┐
+ │ Minimal API Router (CRUD Engine)     │
+ └──────────────────┬───────────────────┘
+                    │
+                    ▼
+ ┌──────────────────────────────────────┐
+ │ Entity Framework Core ORM Layer      │
+ └──────────────────┬───────────────────┘
+                    │
+                    ▼
+ ┌──────────────────────────────────────┐
+ │ SQLite Storage Subsystem (Disk File) │
+ └──────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Core Architectural Highlights
+## Core Technical Features
 
-*   **High-Performance REST Architecture:** Hand-engineered a full **CRUD data lifecycle routing engine** utilizing ASP.NET Core Minimal APIs to handle structured resource payloads dynamically over HTTP loops.
-*   **Production-Grade SQL Persistence:** Migrated system storage layers from volatile in-memory arrays to a permanent physical **SQLite Database Engine (`catalog.db`)** using **Entity Framework Core (EF Core)**. Implemented multi-field schema migrations to append advanced entity properties seamlessly.
-*   **Stateless Security Gateway Shield:** Designed and deployed an **API Key Authentication Middleware (X-API-KEY)** system that intercepts incoming request headers, validates cryptographic credentials, and drops unauthorized access attempts with defensive **`401 Unauthorized`** blocks.
-*   **Automated Regulatory Compliance Stream:** Developed an autonomous runtime compliance manager (`GET /api/compliance/report`) that evaluates active dataset metrics, checks access validation parameters, and dynamically compiles structured **SOC 2 Type II** and **GDPR Article 5** audit reports in under 30 milliseconds.
-*   **Continuous Integration DevOps Automation:** Engineered a self-triggering **GitHub Actions workflow pipeline (`devops-pipeline.yml`)**. The pipeline spins up remote cloud virtual machines on every push to execute automated package restorations, compile code quality gates, and run publication deployment checklists completely on autopilot.
-*   **Docs-as-Code Standardization (10x Faster Docs):** Integrated XML triple-slash code descriptors with OpenAPI v3 specs to auto-generate machine-readable blueprints and an interactive **Deep Space Dark Mode Scalar UI Dashboard Playground**.
+*   **RESTful Routing Framework:** Engineered full CRUD (Create, Read, Update, Delete) endpoints utilizing ASP.NET Core to process structured JSON request payloads over stateless HTTP transit loops.
+*   **Relational Data Persistence:** Integrated Entity Framework Core (EF Core) as the data mapping tier to manage state configurations directly inside a local SQLite binary database file (`catalog.db`). Formulated multi-field schema migrations to maintain rigid structural database compliance across platform versions.
+*   **Stateless Authentication Gateway:** Implemented defensive perimeter control by intercepting incoming request headers via middleware. Validates credentials against a cryptographic `X-API-KEY` token string, terminating unauthorized traffic at the filter boundary with deterministic `401 Unauthorized` responses.
+*   **Regulatory Compliance Logger:** Embedded a telemetry auditing routine (`GET /api/compliance/report`) that dynamically assesses operational states, verify data minimization checks, and aggregates metrics to fulfill standard SOC 2 Type II and GDPR auditing frameworks within a 30ms processing window.
+*   **Continuous Integration Automation:** Configured a GitHub Actions workflow pipeline (`devops-pipeline.yml`) triggered on remote branch pushes. The script automates runtime initialization, dependency mapping, compilation validation gates, and release packaging checks on isolated remote environments.
+*   **Documentation Automation:** Coupled C# XML documentation comments with OpenAPI v3 metadata mapping to auto-generate standardized schema contracts and a self-updating Scalar UI dashboard execution playground.
 
 ---
 
-## 📡 Programmatic System Routing Matrix
+## Programmatic Routing Interface
 
-| Route Endpoint | HTTP Verb | Authentication | System Operational Functionality |
+| Endpoint | HTTP Method | Access Rule | System Operation |
 | :--- | :--- | :--- | :--- |
-| `/api/catalog` | `GET` | 🔓 Public | Queries the physical SQL database file and retrieves the complete library. |
-| `/api/catalog/search` | `GET` | 🔓 Public | Performs real-time, case-insensitive text parsing across collection rows. |
-| `/api/catalog` | `POST` | 🔐 Required | Validates API credentials and commits new unique records permanently to disk. |
-| `/api/catalog/{id}` | `PUT` | 🔐 Required | Target-maps existing ID indexes and updates record properties dynamically. |
-| `/api/catalog/{id}` | `DELETE`| 🔐 Required | Locates specific data asset rows and permanently purges them from memory. |
-| `/api/compliance/report` | `GET` | 🔓 Public | Computes system metrics and compiles instant SOC 2 / GDPR security posture checks. |
+| `/api/catalog` | `GET` | Public | Retrieves the active media collection from disk storage. |
+| `/api/catalog/search` | `GET` | Public | Executes case-insensitive queries against mapped creator records. |
+| `/api/catalog` | `POST` | Authenticated | Commits new structured entity payloads to the relational table. |
+| `/api/catalog/{id}` | `PUT` | Authenticated | Updates target entity columns by unique primary key index. |
+| `/api/catalog/{id}` | `DELETE`| Authenticated | Purges specific rows from the storage subsystem database. |
+| `/api/compliance/report` | `GET` | Public | Generates real-time SOC 2 and GDPR compliance diagnostics. |
 
 ---
 
-## 📊 Live Infrastructure Telemetry Verification Logs
+## Production System Telemetry Traces
 
-This verification manual demonstrates the deterministic console tracing logs compiled during automated security and database executions:
-
-### 1. Intercepting an Unauthorized Attack Sequence
+### 1. Intercepting Unauthenticated Endpoint Invocations
 ```text
-info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+info: Microsoft.AspNetCore.Hosting.Diagnostics
       Request starting HTTP/1.1 POST http://localhost:5201/api/catalog application/json
-warn: MyAutoApi.Security.Firewall[401]
-      SECURITY ALERT: Missing or Invalid X-API-KEY Header Token. Access Denied.
-info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+warn: MyAutoApi.Security.Firewall
+      SECURITY FAILURE: Missing or Invalid Header Token. Request Aborted.
+info: Microsoft.AspNetCore.Hosting.Diagnostics
       Request finished HTTP/1.1 POST http://localhost:5201/api/catalog - 401 Unauthorized in 4.12ms
 ```
 
-### 2. Executing a Successful Authenticated Database Writing Transaction
+### 2. Validated Database Transaction Processing
 ```text
-info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+info: Microsoft.AspNetCore.Hosting.Diagnostics
       Request starting HTTP/1.1 POST http://localhost:5201/api/catalog application/json
-info: MyAutoApi.Security.Firewall[200]
-      Authentication Unlocked via Header Token Verification.
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (12ms) [Parameters=[@p0='2', @p1='Interstellar', @p2='Sci-Fi'...]]
-      INSERT INTO "Catalog" ("Id", "Title", "Creator", "ReleaseYear", "Rating", "Genre") VALUES (@p0, @p1, @p2...)
-info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+info: MyAutoApi.Security.Firewall
+      Authentication Success: Token verified.
+info: Microsoft.EntityFrameworkCore.Database.Command
+      Executed DbCommand (12ms) [Parameters=[@p0='2', @p1='Interstellar'...]]
+      INSERT INTO "Catalog" ("Id", "Title", "Creator") VALUES (@p0, @p1...)
+info: Microsoft.AspNetCore.Hosting.Diagnostics
       Request finished HTTP/1.1 POST http://localhost:5201/api/catalog - 201 Created in 18.45ms
 ```
 
 ---
 
-## 🛠️ Local Sandbox Installation & Execution
+## Local Environment Installation
 
-1. Ensure the **.NET 10 SDK** environment runtime is initialized on your device.
-2. Launch your command terminal in the repository's root workspace directory.
-3. Fire up the backend compiler engine and turn on the server:
+1. Verify that the **.NET 10 SDK** environment runtime is active on the host machine.
+2. Initialize a command shell in the repository root directory.
+3. Build the binary files and launch the server application:
    ```bash
    dotnet run
    ```
-4. Access the automated interactive documentation dashboard playground live from your web browser layout:
-   👉 **`http://localhost:5201/scalar/v1`**
+4. Access the auto-generated documentation schema playground via the browser interface:
+   `http://localhost:5201/scalar/v1`
