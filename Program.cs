@@ -100,13 +100,30 @@ public static class MediaData
     };
 }
 
-// CORE DATA STRUCTURE BLUEPRINT MODEL
+// CORE DATA STRUCTURE BLUEPRINT MODEL WITH AUTOMATED DOCS METADATA
 public class MediaItem
 {
+    /// <summary>The unique sequential identifier tracking primary ID key value.</summary>
+    /// <example>1</example>
     public int Id { get; set; }
+
+    /// <summary>The name designation title of the movie or book item asset.</summary>
+    /// <example>Inception</example>
     public string Title { get; set; } = string.Empty;
+
+    /// <summary>The specific director or author creator handle name.</summary>
+    /// <example>Christopher Nolan</example>
     public string Creator { get; set; } = string.Empty;
+
+    /// <summary>The literal 4-digit calendar year of public release.</summary>
+    /// <example>2010</example>
     public int ReleaseYear { get; set; }
+
+    /// <summary>A metric rating evaluation value scaled from 1 to 5 stars.</summary>
+    /// <example>5</example>
     public int Rating { get; set; }
+
+    /// <summary>The dynamic categorical tag classification parameter of the item.</summary>
+    /// <example>Sci-Fi</example>
     public string Genre { get; set; } = string.Empty;
 }
